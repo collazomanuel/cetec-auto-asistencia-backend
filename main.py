@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 
-from settings import MONGODB_KEY, BACKEND_URL
+from settings import MONGODB_KEY, FRONTEND_URL
 from pymongo import MongoClient
 from datetime import datetime
 
@@ -15,7 +15,7 @@ class Student(BaseModel):
     accuracy: str
 
 app = FastAPI()
-app.add_middleware(CORSMiddleware, allow_origins = [BACKEND_URL], allow_credentials = True, allow_methods = ['*'], allow_headers = ['*'])
+app.add_middleware(CORSMiddleware, allow_origins = [FRONTEND_URL], allow_credentials = True, allow_methods = ['*'], allow_headers = ['*'])
 client = MongoClient(MONGODB_KEY)
 db = client['cetec-auto-asistencia']
 
