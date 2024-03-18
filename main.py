@@ -15,7 +15,7 @@ class Student(BaseModel):
     accuracy: str
 
 app = FastAPI()
-app.add_middleware(CORSMiddleware, allow_origins = [FRONTEND_URL], allow_credentials = True, allow_methods = ['*'], allow_headers = ['*'])
+app.add_middleware(CORSMiddleware, allow_origins = ['*'], allow_credentials = True, allow_methods = ['*'], allow_headers = ['*'])
 client = MongoClient(MONGODB_KEY)
 db = client['cetec-auto-asistencia']
 
