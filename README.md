@@ -16,37 +16,31 @@ Antes de ejecutar este back-end, asegúrese de tener instalado lo siguiente:
 
 ### Configuración del entorno
 
-1. Estando ubicado en la carpeta raìz del proyecto, navega al directorio del back-end
-
-```bash
-cd backend
-```
-
-2. Crea un entorno virtual
+1. Crea un entorno virtual
 
 ```bash
 python3 -m venv .venv
 ```
 
-3. Activa el entorno virtual
+2. Activa el entorno virtual
 
 ```bash
 source .venv/bin/activate
 ```
 
-4. Instala las dependencias
+3. Instala las dependencias
 
 ```bash
 pip install -r requirements.txt
 ```
 
-5. Ejecuta el servidor
+4. Ejecuta el servidor
 
 ```bash
 uvicorn main:app --host 0.0.0.0
 ```
 
-(6). Desactiva el entorno virtual
+(5). Desactiva el entorno virtual
 
 ```bash
 deactivate
