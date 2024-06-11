@@ -7,6 +7,8 @@ from settings import MONGODB_KEY, FRONTEND_URL
 from pymongo import MongoClient
 from datetime import datetime
 
+from deepface import DeepFace
+
 class Student(BaseModel):
     email: str
     image: str = None
@@ -30,3 +32,15 @@ async def student(data: Student):
         'date': datetime.utcnow()
     }))
     return ('Ok')
+
+@app.put('/student')
+async def student(data: Student):
+    student = db['Student'].find_one({'email': data.email})
+    result = DeepFace.verify(
+        img1_path = student['image'],
+        img2_path = data.image
+    )
+    if result['verified']:
+        return ('Valid')
+    else:
+        return ('Invalid')
