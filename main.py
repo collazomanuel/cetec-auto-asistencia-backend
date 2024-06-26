@@ -29,7 +29,7 @@ async def student(data: Student):
         'latitude': data.latitude,
         'longitude': data.longitude,
         'accuracy': data.accuracy,
-        'date': datetime.utcnow()
+        'date': datetime.now(datetime.UTC)
     }))
     return ('Ok')
 
