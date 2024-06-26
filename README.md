@@ -68,6 +68,23 @@ Este servicio recibe los datos de un alumno y los carga en la base de datos. Par
 
 ```http
 POST http://0.0.0.0:8000/student
+
+```
+
+En el _body_ de la _request_ se debe especificar la siguiente información:
+
+- image: Imagen del alumno en el formato de _base64_
+- email: Correo electrónico del alumno
+- latitude: Coordenada de longitud
+- longitude: Coordenada de latitud
+
+#### Student (Servicio)
+
+Este servicio recibe la solicitud de asistencia de un alumno y valida los datos a partir de los datos que hay en la base de datos. Para utilizarlo se debe efectuar una _PUT request_ de la siguiente forma:
+
+```http
+PUT http://0.0.0.0:8000/student
+
 ```
 
 En el _body_ de la _request_ se debe especificar la siguiente información:
