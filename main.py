@@ -9,6 +9,8 @@ from datetime import datetime
 
 from deepface import DeepFace
 
+from haversine import haversine, Unit
+
 class Student(BaseModel):
     email: str
     image: str = None
@@ -20,6 +22,9 @@ app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins = ['*'], allow_credentials = True, allow_methods = ['*'], allow_headers = ['*'])
 client = MongoClient(MONGODB_KEY)
 db = client['cetec-auto-asistencia']
+building_location = (-34.617639, -58.368056)
+building_location_radius = 75
+max_accuracy_allowed = 100
 
 @app.post('/student')
 async def student(data: Student):
@@ -35,10 +40,21 @@ async def student(data: Student):
 
 @app.put('/student')
 async def student(data: Student):
+    if not validate_location(float(data.latitude), float(data.longitude), float(data.accuracy)):
+        return ('Invalid location')
     #student = db['Student'].find_one({'email': data.email})
     #result = DeepFace.verify(img1_path = student['image'], img2_path = data.image)
     result = {'verified': True}
     if result['verified']:
         return ('Valid')
     else:
-        return ('Invalid')
+        return ('Invalid face')
+
+def validate_location(latitude, longitude, accuracy):
+    if accuracy > max_accuracy_allowed:
+        return False
+    accuracy = 0
+    distance = haversine((latitude, longitude), building_location, unit=Unit.METERS)
+    if (distance - accuracy) <= building_location_radius:
+        return True
+    return False
