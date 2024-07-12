@@ -53,7 +53,6 @@ async def student(data: Student):
 def validate_location(latitude, longitude, accuracy):
     if accuracy > max_accuracy_allowed:
         return False
-    accuracy = 0
     distance = haversine((latitude, longitude), building_location, unit=Unit.METERS)
     if (distance - accuracy) <= building_location_radius:
         return True
