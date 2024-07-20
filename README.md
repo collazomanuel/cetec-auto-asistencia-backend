@@ -24,8 +24,16 @@ python3 -m venv .venv
 
 2. Activa el entorno virtual
 
+En Ubuntu:
+
 ```bash
 source .venv/bin/activate
+```
+
+En Windows:
+
+```bash
+.venv\Scripts\activate
 ```
 
 3. Instala las dependencias
