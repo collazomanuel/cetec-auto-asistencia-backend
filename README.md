@@ -48,12 +48,6 @@ pip install -r requirements.txt
 uvicorn main:app --host 0.0.0.0
 ```
 
-(5). Desactiva el entorno virtual
-
-```bash
-deactivate
-```
-
 ### Dependencias
 
 Las dependencias del proyecto se encuentran enlistadas en el archivo _"requirements.txt"_ ubicando en el directorio _"backend"_ junto al archivo _"main.py"_.
@@ -69,10 +63,35 @@ FastAPI proporciona una documentación interactiva generada automáticamente en 
 ```http
 GET /docs
 ```
+#### (GET) Exam
 
-#### Student (Servicio)
+Este servicio devuelve una lista de todos los examenes válidos al momento de efectuar la solicitud. Para utilizarlo se debe efectuar una _GET request_ de la siguiente forma:
 
-Este servicio recibe los datos de un alumno y los carga en la base de datos. Para utilizarlo se debe efectuar una _POST request_ de la siguiente forma:
+```http
+GET http://0.0.0.0:8000/exam
+
+```
+
+#### (POST) Exam
+
+Este servicio recibe los datos de un examen y los carga en la base de datos. Para utilizarlo, se debe efectuar una _POST request_ de la siguiente forma:
+
+```http
+POST http://0.0.0.0:8000/exam
+
+```
+
+En el _body_ de la _request_ se debe especificar la siguiente información:
+
+- code: Código del examen
+- name: Nombre del examen
+- start: Tiempo de comienzo del examen
+- length: Duración del examen en minutos
+- margin: Márgen de validez de asistencia en minutos
+
+#### (POST) Student
+
+Este servicio recibe los datos de un alumno y los carga en la base de datos. Para utilizarlo, se debe efectuar una _POST request_ de la siguiente forma:
 
 ```http
 POST http://0.0.0.0:8000/student
@@ -81,25 +100,24 @@ POST http://0.0.0.0:8000/student
 
 En el _body_ de la _request_ se debe especificar la siguiente información:
 
-- image: Imagen del alumno en el formato de _base64_
 - email: Correo electrónico del alumno
-- latitude: Coordenada de longitud
-- longitude: Coordenada de latitud
+- image: Imagen del alumno en el formato de _base64_
 
-#### Student (Servicio)
+#### (POST) Attendance
 
-Este servicio recibe la solicitud de asistencia de un alumno y valida los datos a partir de los datos que hay en la base de datos. Para utilizarlo se debe efectuar una _PUT request_ de la siguiente forma:
+Este servicio recibe la solicitud de asistencia a un examen de un alumno y valida los parámetros a partir de los datos que existen en la base de datos. Para utilizarlo, se debe efectuar una _POST request_ de la siguiente forma:
 
 ```http
-PUT http://0.0.0.0:8000/student
+POST http://0.0.0.0:8000/attendance
 
 ```
 
 En el _body_ de la _request_ se debe especificar la siguiente información:
 
-- image: Imagen del alumno en el formato de _base64_
+- code: Código del examen
 - email: Correo electrónico del alumno
 - latitude: Coordenada de longitud
 - longitude: Coordenada de latitud
+- image: Imagen del alumno en formato _base64_
 
 ![Footer](https://user-images.githubusercontent.com/75450615/175360883-72efe4c4-1f14-4b11-9a7c-55937563cffa.png)
