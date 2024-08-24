@@ -42,7 +42,8 @@ date_format = '%Y-%m-%d %H:%M'
 @app.get('/exam')
 async def exam():
     exams = list(db['Exam'].find({}, {'_id': False}))
-    filtered_exams = list(filter(lambda exam: datetime.now() < (datetime.strptime(exam['start'], date_format) + timedelta(minutes=exam['margin'])), exams))
+    #filtered_exams = list(filter(lambda exam: datetime.now() < (datetime.strptime(exam['start'], date_format) + timedelta(minutes=exam['margin'])), exams))
+    filtered_exams = exams
     return (filtered_exams)
 
 @app.post('/exam')
