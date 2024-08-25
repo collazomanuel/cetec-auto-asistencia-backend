@@ -54,6 +54,8 @@ async def exam(data: Exam):
 
 @app.post('/student')
 async def student(data: Student):
+    if db['Student'].find_one({'email': data.email}):
+        return ('registration_error_email')
     db['Student'].insert_one(jsonable_encoder(data))
     return ('registration_valid')
 
