@@ -25,9 +25,9 @@ class Exam(BaseModel):
 class Attendance(BaseModel):
     email: str
     code: str
-    latitude: str
-    longitude: str
-    accuracy: str
+    latitude: float
+    longitude: float
+    accuracy: float
     image: str = None
 
 app = FastAPI()
@@ -35,7 +35,7 @@ app.add_middleware(CORSMiddleware, allow_origins = ['*'], allow_credentials = Tr
 client = MongoClient(MONGODB_KEY)
 db = client['cetec-auto-asistencia']
 building_location = (-34.617639, -58.368056)
-building_location_radius = 75
+building_location_radius = 150
 max_accuracy_allowed = 100
 date_format = '%Y-%m-%d %H:%M'
 
@@ -62,7 +62,7 @@ async def student(data: Student):
 @app.post('/attendance')
 async def attendance(data: Attendance):
     student = db['Student'].find_one({'email': data.email})
-    if not validate_location(float(data.latitude), float(data.longitude), float(data.accuracy)):
+    if not validate_location(data.latitude, data.longitude, data.accuracy):
         return ('attendance_error_location')
     if not validate_face(student, data.image):
         return ('attendance_error_face')
@@ -73,9 +73,9 @@ def validate_location(latitude, longitude, accuracy):
     if accuracy > max_accuracy_allowed:
         return False
     distance = haversine((latitude, longitude), building_location, unit=Unit.METERS)
-    if distance - accuracy <= building_location_radius:
-        return True
-    return False
+    if distance - accuracy > building_location_radius:
+        return False
+    return True
 
 def validate_face(student, photo):
     #result = DeepFace.verify(img1_path = student['image'], img2_path = photo)
