@@ -23,8 +23,8 @@ class Exam(BaseModel):
     margin: int
 
 class Attendance(BaseModel):
-    code: str
     email: str
+    code: str
     latitude: str
     longitude: str
     accuracy: str
