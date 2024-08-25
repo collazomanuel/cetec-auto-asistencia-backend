@@ -50,22 +50,22 @@ async def exam():
 async def exam(data: Exam):
     data.code = uuid4()
     db['Exam'].insert_one(jsonable_encoder(data))
-    return ('Ok')
+    return ('exam_valid')
 
 @app.post('/student')
 async def student(data: Student):
     db['Student'].insert_one(jsonable_encoder(data))
-    return ('Ok')
+    return ('registration_valid')
 
 @app.post('/attendance')
 async def attendance(data: Attendance):
     student = db['Student'].find_one({'email': data.email})
     if not validate_location(float(data.latitude), float(data.longitude), float(data.accuracy)):
-        return ('Invalid location')
+        return ('attendance_error_location')
     if not validate_face(student, data.image):
-        return ('Invalid face')
+        return ('attendance_error_face')
     db['Attendance'].insert_one(jsonable_encoder(data))
-    return ('Valid')
+    return ('attendance_valid')
 
 def validate_location(latitude, longitude, accuracy):
     if accuracy > max_accuracy_allowed:
