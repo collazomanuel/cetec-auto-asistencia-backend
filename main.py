@@ -42,6 +42,7 @@ date_format = '%Y-%m-%d %H:%M'
 @app.get('/exam')
 async def exam():
     exams = list(db['Exam'].find({}, {'_id': False}))
+    # Temporalmente se remueve el filtro para facilitar el desarrollo
     #filtered_exams = list(filter(lambda exam: datetime.now() < (datetime.strptime(exam['start'], date_format) + timedelta(minutes=exam['margin'])), exams))
     filtered_exams = exams
     return (filtered_exams)
@@ -78,6 +79,7 @@ def validate_location(latitude, longitude, accuracy):
     return True
 
 def validate_face(student, photo):
+    # Temporalmente se remueve la verificación de rostro por problemas de infraestructura
     #result = DeepFace.verify(img1_path = student['image'], img2_path = photo)
     result = {'verified': True}
     return result['verified'] 
