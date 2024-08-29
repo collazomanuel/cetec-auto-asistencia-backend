@@ -45,7 +45,7 @@ pip install -r requirements.txt
 4. Ejecuta el servidor
 
 ```bash
-uvicorn main:app --host 0.0.0.0
+uvicorn main:app
 ```
 
 ### Dependencias
@@ -58,7 +58,7 @@ En esta sección se incluye información relevante al uso correcto de esta API.
 
 #### Documentación de FastAPI
 
-FastAPI proporciona una documentación interactiva generada automáticamente en _http://0.0.0.0:8000/docs_. Esta documentación describe todos los endpoints disponibles, los parámetros requeridos y opcionales, y los ejemplos de solicitud y respuesta.
+FastAPI proporciona una documentación interactiva generada automáticamente en _http://127.0.0.1:8000/docs_. Esta documentación describe todos los endpoints disponibles, los parámetros requeridos y opcionales, y los ejemplos de solicitud y respuesta.
 
 ```http
 GET /docs
@@ -68,7 +68,7 @@ GET /docs
 Este servicio devuelve una lista de todos los examenes válidos al momento de efectuar la solicitud. Para utilizarlo se debe efectuar una _GET request_ de la siguiente forma:
 
 ```http
-GET http://0.0.0.0:8000/exam
+GET http://127.0.0.1:8000/exam
 
 ```
 
@@ -77,7 +77,7 @@ GET http://0.0.0.0:8000/exam
 Este servicio recibe los datos de un examen y los carga en la base de datos. Para utilizarlo, se debe efectuar una _POST request_ de la siguiente forma:
 
 ```http
-POST http://0.0.0.0:8000/exam
+POST http://127.0.0.1:8000/exam
 
 ```
 
@@ -94,7 +94,7 @@ En el _body_ de la _request_ se debe especificar la siguiente información:
 Este servicio recibe los datos de un alumno y los carga en la base de datos. Para utilizarlo, se debe efectuar una _POST request_ de la siguiente forma:
 
 ```http
-POST http://0.0.0.0:8000/student
+POST http://127.0.0.1:8000/student
 
 ```
 
@@ -108,7 +108,7 @@ En el _body_ de la _request_ se debe especificar la siguiente información:
 Este servicio recibe la solicitud de asistencia a un examen de un alumno y valida los parámetros a partir de los datos que existen en la base de datos. Para utilizarlo, se debe efectuar una _POST request_ de la siguiente forma:
 
 ```http
-POST http://0.0.0.0:8000/attendance
+POST http://127.0.0.1:8000/attendance
 
 ```
 
