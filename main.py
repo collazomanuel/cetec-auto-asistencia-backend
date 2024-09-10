@@ -63,6 +63,8 @@ async def student(data: Student):
 @app.post('/attendance')
 async def attendance(data: Attendance):
     student = db['Student'].find_one({'email': data.email})
+    if not student:
+        return ('attendance_error_email')
     if not validate_location(data.latitude, data.longitude, data.accuracy):
         return ('attendance_error_location')
     if not validate_face(student, data.image):
