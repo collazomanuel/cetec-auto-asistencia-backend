@@ -30,14 +30,15 @@ class Attendance(BaseModel):
     accuracy: float
     image: str = None
 
-app = FastAPI()
-app.add_middleware(CORSMiddleware, allow_origins = [FRONTEND_URL], allow_credentials = True, allow_methods = ['*'], allow_headers = ['*'])
-client = MongoClient(MONGODB_KEY)
-db = client['cetec-auto-asistencia']
 building_location = (-34.617639, -58.368056)
 building_location_radius = 150
 max_accuracy_allowed = 100
 date_format = '%Y-%m-%d %H:%M'
+
+app = FastAPI()
+app.add_middleware(CORSMiddleware, allow_origins = [FRONTEND_URL], allow_credentials = True, allow_methods = ['*'], allow_headers = ['*'])
+client = MongoClient(MONGODB_KEY)
+db = client['cetec-auto-asistencia']
 
 @app.get('/exam')
 async def exam():
