@@ -42,14 +42,12 @@ date_format = '%Y-%m-%d %H:%M'
 @app.get('/exam')
 async def exam():
     exams = list(db['Exam'].find({}, {'_id': False}))
-    # Temporalmente se remueve el filtro para facilitar el desarrollo
-    #filtered_exams = list(filter(lambda exam: datetime.now() < (datetime.strptime(exam['start'], date_format) + timedelta(minutes=exam['margin'])), exams))
-    filtered_exams = exams
+    filtered_exams = list(filter(lambda exam: datetime.now() < (datetime.strptime(exam['start'], date_format) + timedelta(minutes=exam['margin'])), exams))
     return (filtered_exams)
 
 @app.post('/exam')
 async def exam(data: Exam):
-    data.code = uuid4()
+    data.code = str(uuid4())
     db['Exam'].insert_one(jsonable_encoder(data))
     return ('exam_valid')
 
@@ -73,8 +71,6 @@ async def attendance(data: Attendance):
     return ('attendance_valid')
 
 def validate_location(latitude, longitude, accuracy):
-    # Temporalmente se remueve la verificación de ubicación para facilitar el desarrollo
-    return True
     if accuracy > max_accuracy_allowed:
         return False
     distance = haversine((latitude, longitude), building_location, unit=Unit.METERS)
@@ -83,7 +79,5 @@ def validate_location(latitude, longitude, accuracy):
     return True
 
 def validate_face(student, photo):
-    # Temporalmente se remueve la verificación de rostro por problemas de infraestructura
-    #result = DeepFace.verify(img1_path = student['image'], img2_path = photo)
-    result = {'verified': True}
+    result = DeepFace.verify(img1_path = student['image'], img2_path = photo)
     return result['verified'] 
