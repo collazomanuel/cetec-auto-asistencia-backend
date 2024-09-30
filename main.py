@@ -43,7 +43,9 @@ db = client['cetec-auto-asistencia']
 @app.get('/exam')
 async def exam():
     exams = list(db['Exam'].find({}, {'_id': False}))
-    filtered_exams = list(filter(lambda exam: datetime.now() < (datetime.strptime(exam['start'], date_format) + timedelta(minutes=exam['margin'])), exams))
+    # Temporalmente se remueve el filtro para facilitar el desarrollo
+    #filtered_exams = list(filter(lambda exam: datetime.now() < (datetime.strptime(exam['start'], date_format) + timedelta(minutes=exam['margin'])), exams))
+    filtered_exams = exams
     return (filtered_exams)
 
 @app.post('/exam')
@@ -72,6 +74,8 @@ async def attendance(data: Attendance):
     return ('attendance_valid')
 
 def validate_location(latitude, longitude, accuracy):
+    # Temporalmente se remueve la verificación de ubicación para facilitar el desarrollo
+    return True
     if accuracy > max_accuracy_allowed:
         return False
     distance = haversine((latitude, longitude), building_location, unit=Unit.METERS)
@@ -80,5 +84,7 @@ def validate_location(latitude, longitude, accuracy):
     return True
 
 def validate_face(student, photo):
-    result = DeepFace.verify(img1_path = student['image'], img2_path = photo)
+    # Temporalmente se remueve la verificación de rostro por problemas de infraestructura
+    #result = DeepFace.verify(img1_path = student['image'], img2_path = photo)
+    result = {'verified': True}
     return result['verified'] 
