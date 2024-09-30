@@ -48,6 +48,11 @@ async def exam():
     filtered_exams = exams
     return (filtered_exams)
 
+@app.get('/attendance')
+async def attendance(code: str):
+    attendances = list(db['Attendance'].find({'code': code}, {'_id': False, 'image': False}))
+    return (attendances)
+
 @app.post('/exam')
 async def exam(data: Exam):
     data.code = str(uuid4())
