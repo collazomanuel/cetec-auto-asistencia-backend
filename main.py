@@ -78,6 +78,15 @@ async def attendance(data: Attendance):
     db['Attendance'].insert_one(jsonable_encoder(data))
     return ('attendance_valid')
 
+@app.put('/exam') 
+async def exam(data: Exam): 
+    result = db['Exam'].update_one({"code": data.code}, {"$set": jsonable_encoder(data)})
+     
+    if result.modified_count == 0:
+        return ("exam_error_code")
+    
+    return ("exam_update")
+    
 def validate_location(latitude, longitude, accuracy):
     # Temporalmente se remueve la verificación de ubicación para facilitar el desarrollo
     return True
