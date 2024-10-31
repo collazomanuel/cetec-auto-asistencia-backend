@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 from pymongo import MongoClient
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from deepface import DeepFace
 from haversine import haversine, Unit
@@ -43,10 +43,22 @@ db = client['cetec-auto-asistencia']
 @app.get('/exam')
 async def exam():
     exams = list(db['Exam'].find({}, {'_id': False}))
-    # Temporalmente se remueve el filtro para facilitar el desarrollo
-    #filtered_exams = list(filter(lambda exam: datetime.now() < (datetime.strptime(exam['start'], date_format) + timedelta(minutes=exam['margin'])), exams))
-    filtered_exams = exams
-    return (filtered_exams)
+
+    #Temporalmente se remueve el filtro para facilitar el desarrollo
+    # exams = list(db['Exam'].find({
+    #     '$expr': {
+    #         '$gt': [
+    #             {"$dateAdd": {
+    #                 "startDate": {"$toDate": "$start"},
+    #                 "unit": "minute",
+    #                 "amount": {"$add": "$margin"}
+    #             }},
+    #             datetime.now()
+    #         ]
+    #     }
+    # }, {'_id': False}))
+    
+    return (exams)
 
 @app.get('/attendance')
 async def attendance(code: str):
