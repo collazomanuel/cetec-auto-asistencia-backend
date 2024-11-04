@@ -41,23 +41,41 @@ client = MongoClient(MONGODB_KEY)
 db = client['cetec-auto-asistencia']
 
 @app.get('/exam')
-async def exam():
-    exams = list(db['Exam'].find({}, {'_id': False}))
-
-    #Temporalmente se remueve el filtro para facilitar el desarrollo
-    # exams = list(db['Exam'].find({
-    #     '$expr': {
-    #         '$gt': [
-    #             {"$dateAdd": {
-    #                 "startDate": {"$toDate": "$start"},
-    #                 "unit": "minute",
-    #                 "amount": {"$add": "$margin"}
-    #             }},
-    #             datetime.now()
-    #         ]
-    #     }
-    # }, {'_id': False}))
-    
+async def exam(filter: bool = False):
+    filter_expression = {}
+    if filter:
+        filter_expression = {
+            '$expr': {
+                '$and': [
+                    {
+                        '$gte': [
+                            datetime.now(),
+                            {
+                                "$dateAdd": {
+                                    "startDate": {"$toDate": "$start"},
+                                    "unit": "minute",
+                                    "amount": {"$multiply": ["$margin", -1]}
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        '$lte': [
+                            datetime.now(),
+                            {
+                                "$dateAdd": {
+                                    "startDate": {"$toDate": "$start"},
+                                    "unit": "minute",
+                                    "amount": "$margin"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+     
+    exams = list(db['Exam'].find(filter_expression, {'_id': False})) 
     return (exams)
 
 @app.get('/attendance')
