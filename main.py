@@ -62,16 +62,21 @@ app.add_middleware(CORSMiddleware, allow_origins = [FRONTEND_URL], allow_credent
 client = MongoClient(MONGODB_KEY)
 db = client['cetec-auto-asistencia']
 
+@app.post('/student')
+async def student(data: Student, request: Request):
+    token = request.headers.get('Authorization')
+    if token == '' and False:
+        return (Result.ERROR_STUDENT_AUTH)
+    if db['Student'].find_one({'email': data.email}):
+        return (Result.ERROR_STUDENT_EMAIL)
+    db['Student'].insert_one(jsonable_encoder(data))
+    return (Result.SUCCESS_STUDENT_ADD)
+
 @app.get('/exam')
 async def exam(filter: bool):
     filter_expression = build_filter_expression() if filter else {}
     exams = list(db['Exam'].find(filter_expression, {'_id': False})) 
     return (exams)
-
-@app.get('/attendance')
-async def attendance(code: str):
-    attendances = list(db['Attendance'].find({'code': code}, {'_id': False, 'image': False}))
-    return (attendances)
 
 @app.post('/exam')
 async def exam(data: Exam, request: Request):
@@ -82,15 +87,20 @@ async def exam(data: Exam, request: Request):
     db['Exam'].insert_one(jsonable_encoder(data))
     return (Result.SUCCESS_EXAM_ADD)
 
-@app.post('/student')
-async def student(data: Student, request: Request):
+@app.put('/exam') 
+async def exam(data: Exam, request: Request):
     token = request.headers.get('Authorization')
     if token == '' and False:
-        return (Result.ERROR_STUDENT_AUTH)
-    if db['Student'].find_one({'email': data.email}):
-        return (Result.ERROR_STUDENT_EMAIL)
-    db['Student'].insert_one(jsonable_encoder(data))
-    return (Result.SUCCESS_STUDENT_ADD)
+        return (Result.ERROR_EXAM_AUTH)
+    result = db['Exam'].update_one({"code": data.code}, {"$set": jsonable_encoder(data)})
+    if result.modified_count == 0:
+        return (Result.ERROR_EXAM_CODE)
+    return (Result.SUCCESS_EXAM_EDIT)
+
+@app.get('/attendance')
+async def attendance(code: str):
+    attendances = list(db['Attendance'].find({'code': code}, {'_id': False, 'image': False}))
+    return (attendances)
 
 @app.post('/attendance')
 async def attendance(data: Attendance, request: Request):
@@ -106,16 +116,6 @@ async def attendance(data: Attendance, request: Request):
         return (Result.ERROR_ATTENDANCE_FACE)
     db['Attendance'].insert_one(jsonable_encoder(data))
     return (Result.SUCCESS_ATTENDANCE_ADD)
-
-@app.put('/exam') 
-async def exam(data: Exam, request: Request):
-    token = request.headers.get('Authorization')
-    if token == '' and False:
-        return (Result.ERROR_EXAM_AUTH)
-    result = db['Exam'].update_one({"code": data.code}, {"$set": jsonable_encoder(data)})
-    if result.modified_count == 0:
-        return (Result.ERROR_EXAM_CODE)
-    return (Result.SUCCESS_EXAM_EDIT)
     
 def validate_location(latitude, longitude, accuracy):
     # Temporalmente se remueve la verificación de ubicación para facilitar el desarrollo
