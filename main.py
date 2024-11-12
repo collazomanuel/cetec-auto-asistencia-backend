@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
@@ -41,7 +41,7 @@ client = MongoClient(MONGODB_KEY)
 db = client['cetec-auto-asistencia']
 
 @app.get('/exam')
-async def exam(filter: bool = False):
+async def exam(filter: bool):
     filter_expression = {}
     if filter:
         filter_expression = {
@@ -74,7 +74,6 @@ async def exam(filter: bool = False):
                 ]
             }
         }
-     
     exams = list(db['Exam'].find(filter_expression, {'_id': False})) 
     return (exams)
 
@@ -84,20 +83,29 @@ async def attendance(code: str):
     return (attendances)
 
 @app.post('/exam')
-async def exam(data: Exam):
+async def exam(data: Exam, request: Request):
+    token = request.headers.get('Authorization')
+    if token == '' and False:
+        return ('exam_error_auth')
     data.code = str(uuid4())
     db['Exam'].insert_one(jsonable_encoder(data))
     return ('exam_valid')
 
 @app.post('/student')
-async def student(data: Student):
+async def student(data: Student, request: Request):
+    token = request.headers.get('Authorization')
+    if token == '' and False:
+        return ('student_error_auth')
     if db['Student'].find_one({'email': data.email}):
         return ('registration_error_email')
     db['Student'].insert_one(jsonable_encoder(data))
     return ('registration_valid')
 
 @app.post('/attendance')
-async def attendance(data: Attendance):
+async def attendance(data: Attendance, request: Request):
+    token = request.headers.get('Authorization')
+    if token == '' and False:
+        return ('attendance_error_auth')
     student = db['Student'].find_one({'email': data.email})
     if not student:
         return ('attendance_error_email')
@@ -109,12 +117,13 @@ async def attendance(data: Attendance):
     return ('attendance_valid')
 
 @app.put('/exam') 
-async def exam(data: Exam): 
+async def exam(data: Exam, request: Request):
+    token = request.headers.get('Authorization')
+    if token == '' and False:
+        return ('exam_error_auth')
     result = db['Exam'].update_one({"code": data.code}, {"$set": jsonable_encoder(data)})
-     
     if result.modified_count == 0:
         return ("exam_error_code")
-    
     return ("exam_update")
     
 def validate_location(latitude, longitude, accuracy):
