@@ -14,18 +14,21 @@ from settings import MONGODB_KEY, FRONTEND_URL
 from enum import Enum
 
 class Result(str, Enum):
-    STUDENT_ERROR_AUTH = 'student_error_auth'
-    EXAM_ERROR_AUTH = 'exam_error_auth'
-    ATTENDANCE_ERROR_AUTH = 'attendance_error_auth'
-    EXAM_VALID = 'exam_valid'
-    REGISTRATION_ERROR_EMAIL = 'registration_error_email'
-    REGISTRATION_VALID = 'registration_valid'
-    ATTENDANCE_ERROR_EMAIL = 'attendance_error_email'
-    ATTENDANCE_ERROR_LOCATION = 'attendance_error_location'
-    ATTENDANCE_ERROR_FACE = 'attendance_error_face'
-    ATTENDANCE_VALID = 'attendance_valid'
-    EXAM_ERROR_CODE = 'exam_error_code'
-    EXAM_UPDATE = 'exam_update'
+
+    SUCCESS_STUDENT_ADD = 'SUCCESS_STUDENT_ADD'
+    ERROR_STUDENT_AUTH = 'ERROR_STUDENT_AUTH'
+    ERROR_STUDENT_EMAIL = 'ERROR_STUDENT_EMAIL'
+
+    SUCCESS_EXAM_ADD = 'SUCCESS_EXAM_ADD'
+    SUCCESS_EXAM_EDIT = 'SUCCESS_EXAM_EDIT'
+    ERROR_EXAM_AUTH = 'ERROR_EXAM_AUTH'
+    ERROR_EXAM_CODE = 'ERROR_EXAM_CODE'
+
+    SUCCESS_ATTENDANCE_ADD = 'SUCCESS_ATTENDANCE_ADD'
+    ERROR_ATTENDANCE_AUTH = 'ERROR_ATTENDANCE_AUTH'
+    ERROR_ATTENDANCE_EMAIL = 'ERROR_ATTENDANCE_EMAIL'
+    ERROR_ATTENDANCE_LOCATION = 'ERROR_ATTENDANCE_LOCATION'
+    ERROR_ATTENDANCE_FACE = 'ERROR_ATTENDANCE_FACE'
 
     def __str__(self):
         return self.value
@@ -74,45 +77,45 @@ async def attendance(code: str):
 async def exam(data: Exam, request: Request):
     token = request.headers.get('Authorization')
     if token == '' and False:
-        return (Result.EXAM_ERROR_AUTH)
+        return (Result.ERROR_EXAM_AUTH)
     data.code = str(uuid4())
     db['Exam'].insert_one(jsonable_encoder(data))
-    return (Result.EXAM_VALID)
+    return (Result.SUCCESS_EXAM_ADD)
 
 @app.post('/student')
 async def student(data: Student, request: Request):
     token = request.headers.get('Authorization')
     if token == '' and False:
-        return (Result.STUDENT_ERROR_AUTH)
+        return (Result.ERROR_STUDENT_AUTH)
     if db['Student'].find_one({'email': data.email}):
-        return (Result.REGISTRATION_ERROR_EMAIL)
+        return (Result.ERROR_STUDENT_EMAIL)
     db['Student'].insert_one(jsonable_encoder(data))
-    return (Result.REGISTRATION_VALID)
+    return (Result.SUCCESS_STUDENT_ADD)
 
 @app.post('/attendance')
 async def attendance(data: Attendance, request: Request):
     token = request.headers.get('Authorization')
     if token == '' and False:
-        return (Result.ATTENDANCE_ERROR_AUTH)
+        return (Result.ERROR_ATTENDANCE_AUTH)
     student = db['Student'].find_one({'email': data.email})
     if not student:
-        return (Result.ATTENDANCE_ERROR_EMAIL)
+        return (Result.ERROR_ATTENDANCE_EMAIL)
     if not validate_location(data.latitude, data.longitude, data.accuracy):
-        return (Result.ATTENDANCE_ERROR_LOCATION)
+        return (Result.ERROR_ATTENDANCE_LOCATION)
     if not validate_face(student, data.image):
-        return (Result.ATTENDANCE_ERROR_FACE)
+        return (Result.ERROR_ATTENDANCE_FACE)
     db['Attendance'].insert_one(jsonable_encoder(data))
-    return (Result.ATTENDANCE_VALID)
+    return (Result.SUCCESS_ATTENDANCE_ADD)
 
 @app.put('/exam') 
 async def exam(data: Exam, request: Request):
     token = request.headers.get('Authorization')
     if token == '' and False:
-        return (Result.EXAM_ERROR_AUTH)
+        return (Result.ERROR_EXAM_AUTH)
     result = db['Exam'].update_one({"code": data.code}, {"$set": jsonable_encoder(data)})
     if result.modified_count == 0:
-        return (Result.EXAM_ERROR_CODE)
-    return (Result.EXAM_UPDATE)
+        return (Result.ERROR_EXAM_CODE)
+    return (Result.SUCCESS_EXAM_EDIT)
     
 def validate_location(latitude, longitude, accuracy):
     # Temporalmente se remueve la verificación de ubicación para facilitar el desarrollo
