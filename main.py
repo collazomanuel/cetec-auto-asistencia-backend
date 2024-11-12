@@ -42,38 +42,7 @@ db = client['cetec-auto-asistencia']
 
 @app.get('/exam')
 async def exam(filter: bool):
-    filter_expression = {}
-    if filter:
-        filter_expression = {
-            '$expr': {
-                '$and': [
-                    {
-                        '$gte': [
-                            datetime.now(),
-                            {
-                                "$dateAdd": {
-                                    "startDate": {"$toDate": "$start"},
-                                    "unit": "minute",
-                                    "amount": {"$multiply": ["$margin", -1]}
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        '$lte': [
-                            datetime.now(),
-                            {
-                                "$dateAdd": {
-                                    "startDate": {"$toDate": "$start"},
-                                    "unit": "minute",
-                                    "amount": "$margin"
-                                }
-                            }
-                        ]
-                    }
-                ]
-            }
-        }
+    filter_expression = build_filter_expression() if filter else {}
     exams = list(db['Exam'].find(filter_expression, {'_id': False})) 
     return (exams)
 
@@ -141,3 +110,35 @@ def validate_face(student, photo):
     #result = DeepFace.verify(img1_path = student['image'], img2_path = photo)
     result = {'verified': True}
     return result['verified'] 
+
+def build_filter_expression():
+    return {
+        '$expr': {
+            '$and': [
+                {
+                    '$gte': [
+                        datetime.now(),
+                        {
+                            "$dateAdd": {
+                                "startDate": {"$toDate": "$start"},
+                                "unit": "minute",
+                                "amount": {"$multiply": ["$margin", -1]}
+                            }
+                        }
+                    ]
+                },
+                {
+                    '$lte': [
+                        datetime.now(),
+                        {
+                            "$dateAdd": {
+                                "startDate": {"$toDate": "$start"},
+                                "unit": "minute",
+                                "amount": "$margin"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    }
