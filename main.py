@@ -13,6 +13,11 @@ from settings import MONGODB_KEY, FRONTEND_URL
 
 from enum import Enum
 
+BUILDING_LOCATION = (-34.617639, -58.368056)
+BUILDING_LOCATION_RADIUS = 150
+MAX_ACCURACY_ALLOWED = 100
+DATE_FORMAT = '%Y-%m-%d %H:%M'
+
 class Result(str, Enum):
 
     SUCCESS_STUDENT_ADD = 'SUCCESS_STUDENT_ADD'
@@ -51,11 +56,6 @@ class Attendance(BaseModel):
     longitude: float
     accuracy: float
     image: str = None
-
-BUILDING_LOCATION = (-34.617639, -58.368056)
-BUILDING_LOCATION_RADIUS = 150
-MAX_ACCURACY_ALLOWED = 100
-DATE_FORMAT = '%Y-%m-%d %H:%M'
 
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins = [FRONTEND_URL], allow_credentials = True, allow_methods = ['*'], allow_headers = ['*'])
