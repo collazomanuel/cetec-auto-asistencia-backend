@@ -15,6 +15,7 @@ from enum import Enum
 
 DB_NAME = 'cetec-auto-asistencia'
 STUDENT_COLLECTION_NAME = 'Student'
+PROFESSOR_COLLECTION_NAME = 'Professor'
 EXAM_COLLECTION_NAME = 'Exam'
 ATTENDANCE_COLLECTION_NAME = 'Attendance'
 
@@ -28,6 +29,10 @@ class Result(str, Enum):
     SUCCESS_STUDENT_ADD = 'SUCCESS_STUDENT_ADD'
     ERROR_STUDENT_AUTH = 'ERROR_STUDENT_AUTH'
     ERROR_STUDENT_EMAIL = 'ERROR_STUDENT_EMAIL'
+
+    SUCCESS_PROFESSOR_ADD = 'SUCCESS_PROFESSOR_ADD'
+    ERROR_PROFESSOR_AUTH = 'ERROR_PROFESSOR_AUTH'
+    ERROR_PROFESSOR_EMAIL = 'ERROR_PROFESSOR_EMAIL'
 
     SUCCESS_EXAM_ADD = 'SUCCESS_EXAM_ADD'
     SUCCESS_EXAM_EDIT = 'SUCCESS_EXAM_EDIT'
@@ -46,6 +51,9 @@ class Result(str, Enum):
 class Student(BaseModel):
     email: str
     image: str = None
+
+class Professor(BaseModel):
+    email: str
 
 class Exam(BaseModel):
     code: str
@@ -76,6 +84,21 @@ async def student(data: Student, request: Request):
         return (Result.ERROR_STUDENT_EMAIL)
     db[STUDENT_COLLECTION_NAME].insert_one(jsonable_encoder(data))
     return (Result.SUCCESS_STUDENT_ADD)
+
+@app.get('/professor')
+async def professor():
+    professors = list(db[PROFESSOR_COLLECTION_NAME].find({}, {'_id': False})) 
+    return(professors)
+
+@app.post('/professor')
+async def professor(data: Professor, request: Request):
+    token = request.headers.get('Authorization')
+    if token == '' and False:
+        return (Result.ERROR_PROFESSOR_AUTH)
+    if db[PROFESSOR_COLLECTION_NAME].find_one({'email': data.email}):
+        return (Result.ERROR_PROFESSOR_EMAIL)
+    db[PROFESSOR_COLLECTION_NAME].insert_one(jsonable_encoder(data))
+    return (Result.SUCCESS_PROFESSOR_ADD)
 
 @app.get('/exam')
 async def exam(filter: bool):
