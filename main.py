@@ -52,10 +52,10 @@ class Attendance(BaseModel):
     accuracy: float
     image: str = None
 
-building_location = (-34.617639, -58.368056)
-building_location_radius = 150
-max_accuracy_allowed = 100
-date_format = '%Y-%m-%d %H:%M'
+BUILDING_LOCATION = (-34.617639, -58.368056)
+BUILDING_LOCATION_RADIUS = 150
+MAX_ACCURACY_ALLOWED = 100
+DATE_FORMAT = '%Y-%m-%d %H:%M'
 
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins = [FRONTEND_URL], allow_credentials = True, allow_methods = ['*'], allow_headers = ['*'])
@@ -120,10 +120,10 @@ async def attendance(data: Attendance, request: Request):
 def validate_location(latitude, longitude, accuracy):
     # Temporalmente se remueve la verificación de ubicación para facilitar el desarrollo
     return True
-    if accuracy > max_accuracy_allowed:
+    if accuracy > MAX_ACCURACY_ALLOWED:
         return False
-    distance = haversine((latitude, longitude), building_location, unit=Unit.METERS)
-    if distance - accuracy > building_location_radius:
+    distance = haversine((latitude, longitude), BUILDING_LOCATION, unit=Unit.METERS)
+    if distance - accuracy > BUILDING_LOCATION_RADIUS:
         return False
     return True
 
