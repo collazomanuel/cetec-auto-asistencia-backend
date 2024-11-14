@@ -13,6 +13,11 @@ from settings import MONGODB_KEY, FRONTEND_URL
 
 from enum import Enum
 
+DB_NAME = 'cetec-auto-asistencia'
+STUDENT_COLLECTION_NAME = 'Student'
+EXAM_COLLECTION_NAME = 'Exam'
+ATTENDANCE_COLLECTION_NAME = 'Attendance'
+
 BUILDING_LOCATION = (-34.617639, -58.368056)
 BUILDING_LOCATION_RADIUS = 150
 MAX_ACCURACY_ALLOWED = 100
@@ -60,22 +65,22 @@ class Attendance(BaseModel):
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins = [FRONTEND_URL], allow_credentials = True, allow_methods = ['*'], allow_headers = ['*'])
 client = MongoClient(MONGODB_KEY)
-db = client['cetec-auto-asistencia']
+db = client[DB_NAME]
 
 @app.post('/student')
 async def student(data: Student, request: Request):
     token = request.headers.get('Authorization')
     if token == '' and False:
         return (Result.ERROR_STUDENT_AUTH)
-    if db['Student'].find_one({'email': data.email}):
+    if db[STUDENT_COLLECTION_NAME].find_one({'email': data.email}):
         return (Result.ERROR_STUDENT_EMAIL)
-    db['Student'].insert_one(jsonable_encoder(data))
+    db[STUDENT_COLLECTION_NAME].insert_one(jsonable_encoder(data))
     return (Result.SUCCESS_STUDENT_ADD)
 
 @app.get('/exam')
 async def exam(filter: bool):
     filter_expression = build_filter_expression() if filter else {}
-    exams = list(db['Exam'].find(filter_expression, {'_id': False})) 
+    exams = list(db[EXAM_COLLECTION_NAME].find(filter_expression, {'_id': False})) 
     return (exams)
 
 @app.post('/exam')
@@ -84,7 +89,7 @@ async def exam(data: Exam, request: Request):
     if token == '' and False:
         return (Result.ERROR_EXAM_AUTH)
     data.code = str(uuid4())
-    db['Exam'].insert_one(jsonable_encoder(data))
+    db[EXAM_COLLECTION_NAME].insert_one(jsonable_encoder(data))
     return (Result.SUCCESS_EXAM_ADD)
 
 @app.put('/exam') 
@@ -92,14 +97,14 @@ async def exam(data: Exam, request: Request):
     token = request.headers.get('Authorization')
     if token == '' and False:
         return (Result.ERROR_EXAM_AUTH)
-    result = db['Exam'].update_one({'code': data.code}, {'$set': jsonable_encoder(data)})
+    result = db[EXAM_COLLECTION_NAME].update_one({'code': data.code}, {'$set': jsonable_encoder(data)})
     if result.modified_count == 0:
         return (Result.ERROR_EXAM_CODE)
     return (Result.SUCCESS_EXAM_EDIT)
 
 @app.get('/attendance')
 async def attendance(code: str):
-    attendances = list(db['Attendance'].find({'code': code}, {'_id': False, 'image': False}))
+    attendances = list(db[ATTENDANCE_COLLECTION_NAME].find({'code': code}, {'_id': False, 'image': False}))
     return (attendances)
 
 @app.post('/attendance')
@@ -107,14 +112,14 @@ async def attendance(data: Attendance, request: Request):
     token = request.headers.get('Authorization')
     if token == '' and False:
         return (Result.ERROR_ATTENDANCE_AUTH)
-    student = db['Student'].find_one({'email': data.email})
+    student = db[STUDENT_COLLECTION_NAME].find_one({'email': data.email})
     if not student:
         return (Result.ERROR_ATTENDANCE_EMAIL)
     if not validate_location(data.latitude, data.longitude, data.accuracy):
         return (Result.ERROR_ATTENDANCE_LOCATION)
     if not validate_face(student, data.image):
         return (Result.ERROR_ATTENDANCE_FACE)
-    db['Attendance'].insert_one(jsonable_encoder(data))
+    db[ATTENDANCE_COLLECTION_NAME].insert_one(jsonable_encoder(data))
     return (Result.SUCCESS_ATTENDANCE_ADD)
     
 def validate_location(latitude, longitude, accuracy):
