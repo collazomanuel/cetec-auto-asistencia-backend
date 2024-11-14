@@ -92,7 +92,7 @@ async def exam(data: Exam, request: Request):
     token = request.headers.get('Authorization')
     if token == '' and False:
         return (Result.ERROR_EXAM_AUTH)
-    result = db['Exam'].update_one({"code": data.code}, {"$set": jsonable_encoder(data)})
+    result = db['Exam'].update_one({'code': data.code}, {'$set': jsonable_encoder(data)})
     if result.modified_count == 0:
         return (Result.ERROR_EXAM_CODE)
     return (Result.SUCCESS_EXAM_EDIT)
@@ -141,10 +141,10 @@ def build_filter_expression():
                     '$gte': [
                         datetime.now(),
                         {
-                            "$dateAdd": {
-                                "startDate": {"$toDate": "$start"},
-                                "unit": "minute",
-                                "amount": {"$multiply": ["$margin", -1]}
+                            '$dateAdd': {
+                                'startDate': {'$toDate': '$start'},
+                                'unit': 'minute',
+                                'amount': {'$multiply': ['$margin', -1]}
                             }
                         }
                     ]
@@ -153,10 +153,10 @@ def build_filter_expression():
                     '$lte': [
                         datetime.now(),
                         {
-                            "$dateAdd": {
-                                "startDate": {"$toDate": "$start"},
-                                "unit": "minute",
-                                "amount": "$margin"
+                            '$dateAdd': {
+                                'startDate': {'$toDate': '$start'},
+                                'unit': 'minute',
+                                'amount': '$margin'
                             }
                         }
                     ]
