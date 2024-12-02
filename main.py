@@ -1,20 +1,20 @@
-from fastapi import FastAPI, Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.encoders import jsonable_encoder
-from pydantic import BaseModel
-from pymongo import MongoClient
-from datetime import datetime, timedelta, timezone
 
-from deepface import DeepFace
-from haversine import haversine, Unit
+from datetime import datetime, timedelta, timezone
+from enum import Enum
 from uuid import uuid4
 
-from settings import MONGODB_KEY, FRONTEND_URL
-
-from enum import Enum
-
 import requests
+from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi.encoders import jsonable_encoder
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from haversine import haversine, Unit
+from pydantic import BaseModel
+from pymongo import MongoClient
+
+from deepface import DeepFace
+
+from settings import MONGODB_KEY, FRONTEND_URL
 
 DB_NAME = 'cetec-auto-asistencia'
 STUDENT_COLLECTION_NAME = 'Student'
