@@ -1,4 +1,5 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
@@ -12,6 +13,8 @@ from uuid import uuid4
 from settings import MONGODB_KEY, FRONTEND_URL
 
 from enum import Enum
+
+import requests
 
 DB_NAME = 'cetec-auto-asistencia'
 STUDENT_COLLECTION_NAME = 'Student'
@@ -72,14 +75,28 @@ class Attendance(BaseModel):
 
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins = [FRONTEND_URL], allow_credentials = True, allow_methods = ['*'], allow_headers = ['*'])
+security = HTTPBearer()
 client = MongoClient(MONGODB_KEY)
 db = client[DB_NAME]
 
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):    
+    token = credentials.credentials
+    response = requests.get(
+        'https://www.googleapis.com/oauth2/v3/userinfo',
+        headers={'Authorization': f'Bearer {token}'}
+    )
+    if response.status_code != 200:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication credentials",
+        )
+    user_info = response.json()
+    return user_info
+
 @app.post('/student')
-async def student(data: Student, request: Request):
-    token = request.headers.get('Authorization')
-    if token == '' and False:
-        return (Result.ERROR_STUDENT_AUTH)
+async def student(data: Student, current_user: dict = Depends(get_current_user)):
+    if not is_a_professor(current_user['email']):
+        return (Result.ERROR_EXAM_AUTH)
     if db[STUDENT_COLLECTION_NAME].find_one({'email': data.email}):
         return (Result.ERROR_STUDENT_EMAIL)
     db[STUDENT_COLLECTION_NAME].insert_one(jsonable_encoder(data))
@@ -91,9 +108,8 @@ async def professor():
     return(professors)
 
 @app.post('/professor')
-async def professor(data: Professor, request: Request):
-    token = request.headers.get('Authorization')
-    if token == '' and False:
+async def professor(data: Professor, current_user: dict = Depends(get_current_user)):
+    if not is_a_professor(current_user['email']):
         return (Result.ERROR_PROFESSOR_AUTH)
     if db[PROFESSOR_COLLECTION_NAME].find_one({'email': data.email}):
         return (Result.ERROR_PROFESSOR_EMAIL)
@@ -107,18 +123,16 @@ async def exam(filter: bool):
     return (exams)
 
 @app.post('/exam')
-async def exam(data: Exam, request: Request):
-    token = request.headers.get('Authorization')
-    if token == '' and False:
+async def exam(data: Exam, current_user: dict = Depends(get_current_user)):
+    if not is_a_professor(current_user['email']):
         return (Result.ERROR_EXAM_AUTH)
     data.code = str(uuid4())
     db[EXAM_COLLECTION_NAME].insert_one(jsonable_encoder(data))
     return (Result.SUCCESS_EXAM_ADD)
 
 @app.put('/exam') 
-async def exam(data: Exam, request: Request):
-    token = request.headers.get('Authorization')
-    if token == '' and False:
+async def exam(data: Exam, current_user: dict = Depends(get_current_user)):
+    if not is_a_professor(current_user['email']):
         return (Result.ERROR_EXAM_AUTH)
     result = db[EXAM_COLLECTION_NAME].update_one({'code': data.code}, {'$set': jsonable_encoder(data)})
     if result.modified_count == 0:
@@ -131,9 +145,8 @@ async def attendance(code: str):
     return (attendances)
 
 @app.post('/attendance')
-async def attendance(data: Attendance, request: Request):
-    token = request.headers.get('Authorization')
-    if token == '' and False:
+async def attendance(data: Attendance, current_user: dict = Depends(get_current_user)):
+    if not is_a_student(current_user['email']):
         return (Result.ERROR_ATTENDANCE_AUTH)
     student = db[STUDENT_COLLECTION_NAME].find_one({'email': data.email})
     if not student:
@@ -192,3 +205,9 @@ def build_filter_expression():
             ]
         }
     }
+
+def is_a_professor(email):
+    return db[PROFESSOR_COLLECTION_NAME].find_one({'email': email}) != None
+
+def is_a_student(email):
+    return db[STUDENT_COLLECTION_NAME].find_one({'email': email}) != None
