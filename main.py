@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 from enum import Enum
 from uuid import uuid4
 
-import requests
+import httpx
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
@@ -73,22 +73,38 @@ class Attendance(BaseModel):
     accuracy: float
     image: str
 
-app = FastAPI()
-app.add_middleware(CORSMiddleware, allow_origins = [FRONTEND_URL], allow_credentials = True, allow_methods = ['*'], allow_headers = ['*'])
-security = HTTPBearer()
-client = MongoClient(MONGODB_KEY)
-db = client[DB_NAME]
-
-async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):    
-    token = credentials.credentials
-    response = requests.get(
-        'https://www.googleapis.com/oauth2/v3/userinfo',
-        headers={'Authorization': f'Bearer {token}'}
+def create_app():
+    app = FastAPI()
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[FRONTEND_URL],
+        allow_credentials=True,
+        allow_methods=['*'],
+        allow_headers=['*']
     )
+    return app
+
+def get_security():
+    return HTTPBearer()
+
+def get_database():
+    client = MongoClient(MONGODB_KEY)
+    return client[DB_NAME]
+
+app = create_app()
+security = get_security()
+db = get_database()
+
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    token = credentials.credentials
+    url = 'https://www.googleapis.com/oauth2/v3/userinfo'
+    headers = {'Authorization': f'Bearer {token}'}
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, headers = headers)
     if response.status_code != 200:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication credentials",
+            status_code = status.HTTP_401_UNAUTHORIZED,
+            detail = 'Invalid authentication credentials'
         )
     user_info = response.json()
     return user_info
