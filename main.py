@@ -53,7 +53,7 @@ class Result(str, Enum):
 
 class Student(BaseModel):
     email: str
-    image: str = None
+    image: str
 
 class Professor(BaseModel):
     email: str
@@ -71,7 +71,7 @@ class Attendance(BaseModel):
     latitude: float
     longitude: float
     accuracy: float
-    image: str = None
+    image: str
 
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins = [FRONTEND_URL], allow_credentials = True, allow_methods = ['*'], allow_headers = ['*'])
