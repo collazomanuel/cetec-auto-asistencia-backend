@@ -48,6 +48,11 @@ class Result(str, Enum):
     ERROR_ATTENDANCE_LOCATION = 'ERROR_ATTENDANCE_LOCATION'
     ERROR_ATTENDANCE_FACE = 'ERROR_ATTENDANCE_FACE'
 
+    SUCCESS_FACE_VALIDATION = 'SUCCESS_FACE_VALIDATION'
+    ERROR_FACE_VALIDATION_AUTH = 'ERROR_FACE_VALIDATION_AUTH'
+    ERROR_FACE_VALIDATION_EMAIL = 'ERROR_FACE_VALIDATION_EMAIL'
+    ERROR_FACE_VALIDATION_FACE = 'ERROR_FACE_VALIDATION_FACE'
+
     def __str__(self):
         return self.value
 
@@ -71,6 +76,10 @@ class Attendance(BaseModel):
     latitude: float
     longitude: float
     accuracy: float
+    image: str
+
+class FaceValidationRequest(BaseModel):
+    email: str
     image: str
 
 def create_app():
@@ -173,6 +182,17 @@ async def attendance(data: Attendance, current_user: dict = Depends(get_current_
         return (Result.ERROR_ATTENDANCE_FACE)
     db[ATTENDANCE_COLLECTION_NAME].insert_one(jsonable_encoder(data))
     return (Result.SUCCESS_ATTENDANCE_ADD)
+
+@app.post('/face_validation')
+async def face_validation(data: FaceValidationRequest, current_user: dict = Depends(get_current_user)):
+    if not is_a_student(current_user['email']):
+        return (Result.ERROR_FACE_VALIDATION_AUTH)
+    student = db[STUDENT_COLLECTION_NAME].find_one({'email': data.email})
+    if not student:
+        return (Result.ERROR_FACE_VALIDATION_EMAIL)
+    if not validate_face(student, data.image):
+        return (Result.ERROR_FACE_VALIDATION_FACE)
+    return (Result.SUCCESS_FACE_VALIDATION)
     
 def validate_location(latitude, longitude, accuracy):
     # Temporalmente se remueve la verificación de ubicación para facilitar el desarrollo
