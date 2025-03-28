@@ -31,11 +31,11 @@ class Result(str, Enum):
 
     SUCCESS_STUDENT_ADD = 'SUCCESS_STUDENT_ADD'
     ERROR_STUDENT_AUTH = 'ERROR_STUDENT_AUTH'
-    ERROR_STUDENT_EMAIL = 'ERROR_STUDENT_EMAIL'
+    ERROR_STUDENT_EXISTING = 'ERROR_STUDENT_EXISTING'
 
     SUCCESS_PROFESSOR_ADD = 'SUCCESS_PROFESSOR_ADD'
     ERROR_PROFESSOR_AUTH = 'ERROR_PROFESSOR_AUTH'
-    ERROR_PROFESSOR_EMAIL = 'ERROR_PROFESSOR_EMAIL'
+    ERROR_PROFESSOR_EXISTING = 'ERROR_PROFESSOR_EXISTING'
 
     SUCCESS_EXAM_ADD = 'SUCCESS_EXAM_ADD'
     SUCCESS_EXAM_EDIT = 'SUCCESS_EXAM_EDIT'
@@ -44,13 +44,11 @@ class Result(str, Enum):
 
     SUCCESS_ATTENDANCE_ADD = 'SUCCESS_ATTENDANCE_ADD'
     ERROR_ATTENDANCE_AUTH = 'ERROR_ATTENDANCE_AUTH'
-    ERROR_ATTENDANCE_EMAIL = 'ERROR_ATTENDANCE_EMAIL'
     ERROR_ATTENDANCE_LOCATION = 'ERROR_ATTENDANCE_LOCATION'
     ERROR_ATTENDANCE_FACE = 'ERROR_ATTENDANCE_FACE'
 
     SUCCESS_FACE_VALIDATION = 'SUCCESS_FACE_VALIDATION'
     ERROR_FACE_VALIDATION_AUTH = 'ERROR_FACE_VALIDATION_AUTH'
-    ERROR_FACE_VALIDATION_EMAIL = 'ERROR_FACE_VALIDATION_EMAIL'
     ERROR_FACE_VALIDATION_FACE = 'ERROR_FACE_VALIDATION_FACE'
 
     def __str__(self):
@@ -79,7 +77,6 @@ class Attendance(BaseModel):
     image: str
 
 class FaceValidationRequest(BaseModel):
-    email: str
     image: str
 
 def create_app():
@@ -121,9 +118,9 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
 @app.post('/student')
 async def student(data: Student, current_user: dict = Depends(get_current_user)):
     if not is_a_professor(current_user['email']):
-        return (Result.ERROR_EXAM_AUTH)
+        return (Result.ERROR_STUDENT_AUTH)
     if db[STUDENT_COLLECTION_NAME].find_one({'email': data.email}):
-        return (Result.ERROR_STUDENT_EMAIL)
+        return (Result.ERROR_STUDENT_EXISTING)
     db[STUDENT_COLLECTION_NAME].insert_one(jsonable_encoder(data))
     return (Result.SUCCESS_STUDENT_ADD)
 
@@ -137,7 +134,7 @@ async def professor(data: Professor, current_user: dict = Depends(get_current_us
     if not is_a_professor(current_user['email']):
         return (Result.ERROR_PROFESSOR_AUTH)
     if db[PROFESSOR_COLLECTION_NAME].find_one({'email': data.email}):
-        return (Result.ERROR_PROFESSOR_EMAIL)
+        return (Result.ERROR_PROFESSOR_EXISTING)
     db[PROFESSOR_COLLECTION_NAME].insert_one(jsonable_encoder(data))
     return (Result.SUCCESS_PROFESSOR_ADD)
 
@@ -171,25 +168,22 @@ async def attendance(code: str):
 
 @app.post('/attendance')
 async def attendance(data: Attendance, current_user: dict = Depends(get_current_user)):
-    if not is_a_student(current_user['email']):
-        return (Result.ERROR_ATTENDANCE_AUTH)
-    student = db[STUDENT_COLLECTION_NAME].find_one({'email': data.email})
+    student = db[STUDENT_COLLECTION_NAME].find_one({'email': current_user['email']})
     if not student:
-        return (Result.ERROR_ATTENDANCE_EMAIL)
+        return (Result.ERROR_ATTENDANCE_AUTH)
     if not validate_location(data.latitude, data.longitude, data.accuracy):
         return (Result.ERROR_ATTENDANCE_LOCATION)
     if not validate_face(student, data.image):
         return (Result.ERROR_ATTENDANCE_FACE)
+    data.email = current_user['email']
     db[ATTENDANCE_COLLECTION_NAME].insert_one(jsonable_encoder(data))
     return (Result.SUCCESS_ATTENDANCE_ADD)
 
 @app.post('/face_validation')
 async def face_validation(data: FaceValidationRequest, current_user: dict = Depends(get_current_user)):
-    if not is_a_student(current_user['email']):
-        return (Result.ERROR_FACE_VALIDATION_AUTH)
-    student = db[STUDENT_COLLECTION_NAME].find_one({'email': data.email})
+    student = db[STUDENT_COLLECTION_NAME].find_one({'email': current_user['email']})
     if not student:
-        return (Result.ERROR_FACE_VALIDATION_EMAIL)
+        return (Result.ERROR_FACE_VALIDATION_AUTH)
     if not validate_face(student, data.image):
         return (Result.ERROR_FACE_VALIDATION_FACE)
     return (Result.SUCCESS_FACE_VALIDATION)
