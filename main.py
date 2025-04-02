@@ -1,4 +1,6 @@
 
+from settings import MONGODB_KEY, FRONTEND_URL
+
 from datetime import datetime, timedelta, timezone
 from enum import Enum
 from uuid import uuid4
@@ -13,8 +15,6 @@ from pydantic import BaseModel
 from pymongo import MongoClient
 
 from deepface import DeepFace
-
-from settings import MONGODB_KEY, FRONTEND_URL
 
 DB_NAME = 'cetec-auto-asistencia'
 STUDENT_COLLECTION_NAME = 'Student'
