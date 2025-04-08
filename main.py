@@ -50,6 +50,7 @@ class Result(str, Enum):
     SUCCESS_FACE_VALIDATION = 'SUCCESS_FACE_VALIDATION'
     ERROR_FACE_VALIDATION_AUTH = 'ERROR_FACE_VALIDATION_AUTH'
     ERROR_FACE_VALIDATION_FACE = 'ERROR_FACE_VALIDATION_FACE'
+    ERROR_FACE_VALIDATION_NO_FACE = 'ERROR_FACE_VALIDATION_NO_FACE'
 
     def __str__(self):
         return self.value
@@ -184,8 +185,12 @@ async def face_validation(data: FaceValidationRequest, current_user: dict = Depe
     student = db[STUDENT_COLLECTION_NAME].find_one({'email': current_user['email']})
     if not student:
         return (Result.ERROR_FACE_VALIDATION_AUTH)
-    if not validate_face(student, data.image):
-        return (Result.ERROR_FACE_VALIDATION_FACE)
+    try:
+        if not validate_face(student, data.image):
+            return (Result.ERROR_FACE_VALIDATION_FACE)
+    except Exception as e:
+        print(e)
+        return (Result.ERROR_FACE_VALIDATION_NO_FACE)
     return (Result.SUCCESS_FACE_VALIDATION)
     
 def validate_location(latitude, longitude, accuracy):
@@ -199,9 +204,7 @@ def validate_location(latitude, longitude, accuracy):
     return True
 
 def validate_face(student, photo):
-    # Temporalmente se remueve la verificación de rostro por problemas de infraestructura
-    #result = DeepFace.verify(img1_path = student['image'], img2_path = photo)
-    result = {'verified': True}
+    result = DeepFace.verify(img1_path = student['image'], img2_path = photo)
     return result['verified'] 
 
 def build_filter_expression():
